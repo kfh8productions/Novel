@@ -541,4 +541,36 @@
 
     // Urgency pips
     const pip = el.closest('.urgency-pip');
-    if (pi
+    if (pip) { selectUrgency(+pip.dataset.u); return; }
+
+    // Add task button
+    if (el.id === 'addBtn') { openModal(); return; }
+
+    // Modal save/cancel/delete
+    if (el.id === 'btnSave')   { saveTask(); return; }
+    if (el.id === 'btnCancel') { closeModal(); return; }
+    if (el.id === 'btnDelete') { deleteTask(); return; }
+
+    // Overlay background
+    if (el.id === 'overlay') { closeModal(); return; }
+
+    // Card actions
+    const action = el.dataset && el.dataset.action;
+    if (action === 'up')    { nudgeUrgency(el.dataset.id, -1); return; }
+    if (action === 'down')  { nudgeUrgency(el.dataset.id, 1); return; }
+    if (action === 'check') { toggleDone(el.dataset.id); return; }
+
+    // Card tap — open modal
+    const card = el.closest('.task');
+    if (card && !el.closest('.task-actions')) { openModal(card.dataset.id); return; }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  startPolling();
+</script>
+</body>
+</html>
+
