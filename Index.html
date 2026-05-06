@@ -333,7 +333,29 @@
     transition: border-color 0.15s; -webkit-appearance: none;
   }
   .field input:focus, .field textarea:focus { border-color: var(--text); }
-  .field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  .notes-editor {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    padding: 10px 12px;
+    outline: none;
+    border-radius: 2px;
+    min-height: 90px;
+    line-height: 1.6;
+    transition: border-color 0.15s;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .notes-editor:focus { border-color: var(--text); }
+  .notes-editor:empty:before {
+    content: attr(data-placeholder);
+    color: var(--muted2);
+    pointer-events: none;
+  }
+  .notes-editor s { opacity: 0.5; }
 
   .urgency-picker { display: flex; gap: 8px; }
   .urgency-pip {
@@ -448,7 +470,7 @@
       <div class="notes-toolbar">
         <button class="fmt-btn" id="btnStrike">S</button>
       </div>
-      <textarea id="f-notes" placeholder="Any context, ideas, references..."></textarea>
+      <div id="f-notes" contenteditable="true" class="notes-editor" data-placeholder="Any context, ideas, references..."></div>
     </div>
     <div class="field">
       <label>Urgency</label>
@@ -574,7 +596,7 @@ function openModal(id) {
   document.getElementById('btnDelete').style.display = id ? '' : 'none';
   document.getElementById('f-title').value    = t ? t.title : '';
   document.getElementById('f-location').value = t ? (t.location || '') : '';
-  document.getElementById('f-notes').value    = t ? (t.notes || '') : '';
+  document.getElementById('f-notes').innerHTML = t ? (t.notes || '') : '';
   selectUrgency(t ? (t.urgency || 4) : 4);
   document.getElementById('overlay').classList.add('open');
   setTimeout(function() { document.getElementById('f-title').focus(); }, 120);
@@ -595,7 +617,7 @@ function saveTask() {
     id: id,
     title: title,
     location: document.getElementById('f-location').value.trim(),
-    notes: document.getElementById('f-notes').value.trim(),
+    notes: document.getElementById('f-notes').innerHTML.trim(),
     urgency: selectedUrgency,
     done: old ? old.done : false,
     created: old ? old.created : Date.now()
@@ -658,13 +680,11 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 }
 
-function renderNotes(text) {
-  var escaped = esc(text);
-  // Replace ~~text~~ with <s>text</s>
-  escaped = escaped.replace(/~~(.*?)~~/g, '<s>$1</s>');
-  // Preserve line breaks
-  escaped = escaped.replace(/\n/g, '<br>');
-  return escaped;
+function renderNotes(html) {
+  // Notes stored as HTML from contenteditable - safe to render directly
+  // Strip any dangerous tags just in case
+  return html.replace(/<script[^>]*>.*?<\/script>/gi, '')
+             .replace(/on\w+="[^"]*"/gi, '');
 }
 
 function render() {
@@ -716,22 +736,8 @@ function render() {
 /* ---- EVENTS ---- */
 document.getElementById('btnStrike').addEventListener('click', function(e) {
   e.preventDefault();
-  var ta = document.getElementById('f-notes');
-  var start = ta.selectionStart;
-  var end = ta.selectionEnd;
-  var selected = ta.value.substring(start, end);
-  var before = ta.value.substring(0, start);
-  var after = ta.value.substring(end);
-  if (selected.length > 0) {
-    ta.value = before + '~~' + selected + '~~' + after;
-    ta.selectionStart = start;
-    ta.selectionEnd = end + 4;
-  } else {
-    ta.value = before + '~~~~' + after;
-    ta.selectionStart = start + 2;
-    ta.selectionEnd = start + 2;
-  }
-  ta.focus();
+  document.getElementById('f-notes').focus();
+  document.execCommand('strikeThrough', false, null);
 });
 
 document.addEventListener('click', function(e) {
