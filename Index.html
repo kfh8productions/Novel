@@ -336,20 +336,20 @@
   .notes-editor {
     width: 100%;
     background: var(--bg);
-    border: 1px solid var(--border);
+    border: none;
     color: var(--text);
     font-family: 'DM Mono', monospace;
     font-size: 0.78rem;
     padding: 10px 12px;
     outline: none;
-    border-radius: 2px;
     min-height: 90px;
+    max-height: 200px;
+    overflow-y: auto;
     line-height: 1.6;
-    transition: border-color 0.15s;
     white-space: pre-wrap;
     word-break: break-word;
   }
-  .notes-editor:focus { border-color: var(--text); }
+  .notes-editor:focus { outline: none; }
   .notes-editor:empty:before {
     content: attr(data-placeholder);
     color: var(--muted2);
@@ -372,10 +372,22 @@
   .pip7 { background: var(--calm3); }
   .urgency-label-text { font-size: 0.55rem; letter-spacing: 0.08em; margin-top: 4px; color: var(--muted); text-align: center; }
 
+  .notes-wrap {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    transition: border-color 0.15s;
+  }
+  .notes-wrap:focus-within { border-color: var(--text); }
   .notes-toolbar {
     display: flex;
     gap: 6px;
-    margin-bottom: 6px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 2;
   }
   .fmt-btn {
     background: none;
@@ -467,10 +479,12 @@
     </div>
     <div class="field">
       <label>Notes</label>
-      <div class="notes-toolbar">
-        <button class="fmt-btn" id="btnStrike">S</button>
+      <div class="notes-wrap">
+        <div class="notes-toolbar">
+          <button class="fmt-btn" id="btnStrike">S</button>
+        </div>
+        <div id="f-notes" contenteditable="true" class="notes-editor" data-placeholder="Any context, ideas, references..."></div>
       </div>
-      <div id="f-notes" contenteditable="true" class="notes-editor" data-placeholder="Any context, ideas, references..."></div>
     </div>
     <div class="field">
       <label>Urgency</label>
