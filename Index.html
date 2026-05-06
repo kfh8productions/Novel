@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Alex -- Novel Tasks</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="The Novel">
+<meta name="theme-color" content="#0e0e0e">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>The Novel</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,6 +41,79 @@
   }
 
   button { font-family: 'DM Mono', monospace; cursor: pointer; }
+
+  /* LOCK SCREEN */
+  #lockScreen {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    gap: 0;
+  }
+  #lockScreen.hidden { display: none; }
+  #lockScreen h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+  #lockScreen p {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  #lockForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 300px;
+  }
+  #lockInput {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    padding: 12px 16px;
+    outline: none;
+    border-radius: 2px;
+    text-align: center;
+    letter-spacing: 0.1em;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  #lockInput:focus { border-color: var(--text); }
+  #lockInput.wrong { border-color: var(--urgent1); animation: shake 0.3s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  #lockBtn {
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 12px;
+    transition: opacity 0.15s;
+  }
+  #lockBtn:hover { opacity: 0.85; }
+  #lockError {
+    font-size: 0.6rem;
+    color: var(--urgent1);
+    letter-spacing: 0.1em;
+    text-align: center;
+    min-height: 1em;
+  }
 
   /* HEADER */
   header {
@@ -167,19 +246,19 @@
     flex-shrink: 0;
   }
 
-  .task-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .task-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .task-title { font-size: 0.85rem; font-weight: 500; line-height: 1.3; letter-spacing: 0.02em; word-break: break-word; }
-  .task-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .task-assignee { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-  .task-due { font-size: 0.6rem; color: var(--muted); }
-  .task-due.overdue { color: var(--urgent1); }
-
-  /* Notes preview on card */
+  .task-location {
+    font-size: 0.6rem;
+    color: var(--calm1);
+    letter-spacing: 0.08em;
+    word-break: break-word;
+  }
   .task-notes-preview {
     font-size: 0.65rem;
     color: var(--muted);
     line-height: 1.5;
-    padding: 0 16px 12px 34px;
+    margin-top: 2px;
     font-style: italic;
     word-break: break-word;
     white-space: pre-wrap;
@@ -290,6 +369,17 @@
 </head>
 <body>
 
+<!-- LOCK SCREEN -->
+<div id="lockScreen">
+  <h1>The Novel</h1>
+  <p>Enter passphrase to continue</p>
+  <div id="lockForm">
+    <input type="password" id="lockInput" placeholder="passphrase" autocomplete="off" />
+    <button id="lockBtn">Enter</button>
+    <div id="lockError"></div>
+  </div>
+</div>
+
 <header>
   <span class="band-name">The Novel</span>
   <span class="subtitle">Writing Tasks</span>
@@ -329,19 +419,15 @@
     <h2 id="modalTitle">New Task</h2>
     <div class="field">
       <label>Task</label>
-      <input type="text" id="f-title" placeholder="e.g. Outline chapter 3" />
+      <input type="text" id="f-title" placeholder="e.g. Rewrite opening" />
     </div>
     <div class="field">
-      <label>Assigned to</label>
-      <input type="text" id="f-assignee" placeholder="e.g. Alex" />
-    </div>
-    <div class="field">
-      <label>Due date (optional)</label>
-      <input type="date" id="f-due" />
+      <label>Location in manuscript</label>
+      <input type="text" id="f-location" placeholder="e.g. Ch.3 p.47, throughout, opening" />
     </div>
     <div class="field">
       <label>Notes</label>
-      <textarea id="f-notes" placeholder="Any context, links, thoughts..."></textarea>
+      <textarea id="f-notes" placeholder="Any context, ideas, references..."></textarea>
     </div>
     <div class="field">
       <label>Urgency</label>
@@ -366,6 +452,7 @@
 
 <script>
 var FB_URL = 'https://alex-novel-default-rtdb.europe-west1.firebasedatabase.app';
+var PASSPHRASE = 'Karinamonsoon';
 var URGENCY_LABELS = ['fire','soon','this week','whenever','low','someday','backlog'];
 var URGENCY_CLASSES = ['u1','u2','u3','u4','u5','u6','u7'];
 var POLL_MS = 4000;
@@ -376,6 +463,35 @@ var editingId = null;
 var selectedUrgency = 4;
 var pollTimer = null;
 
+/* ---- LOCK ---- */
+function checkLock() {
+  if (localStorage.getItem('novel-auth') === 'ok') {
+    document.getElementById('lockScreen').classList.add('hidden');
+  }
+}
+
+function tryUnlock() {
+  var val = document.getElementById('lockInput').value;
+  if (val === PASSPHRASE) {
+    localStorage.setItem('novel-auth', 'ok');
+    document.getElementById('lockScreen').classList.add('hidden');
+    document.getElementById('lockError').textContent = '';
+  } else {
+    document.getElementById('lockInput').classList.add('wrong');
+    document.getElementById('lockError').textContent = 'incorrect passphrase';
+    setTimeout(function() {
+      document.getElementById('lockInput').classList.remove('wrong');
+      document.getElementById('lockInput').value = '';
+    }, 600);
+  }
+}
+
+document.getElementById('lockBtn').addEventListener('click', tryUnlock);
+document.getElementById('lockInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') tryUnlock();
+});
+
+/* ---- FIREBASE ---- */
 function apiUrl(sub) {
   return FB_URL + '/tasks' + (sub || '') + '.json';
 }
@@ -401,6 +517,7 @@ function fbDel(id) {
   return fetch(apiUrl('/' + id), { method: 'DELETE' });
 }
 
+/* ---- POLL ---- */
 function poll() {
   fbGet().then(function(data) {
     tasks = data || {};
@@ -419,6 +536,7 @@ function startPolling() {
   pollTimer = setInterval(poll, POLL_MS);
 }
 
+/* ---- URGENCY ---- */
 function selectUrgency(u) {
   selectedUrgency = u;
   document.querySelectorAll('.urgency-pip').forEach(function(p) {
@@ -427,14 +545,14 @@ function selectUrgency(u) {
   document.getElementById('urgency-label').textContent = URGENCY_LABELS[u - 1];
 }
 
+/* ---- MODAL ---- */
 function openModal(id) {
   editingId = id || null;
   var t = id && tasks[id];
   document.getElementById('modalTitle').textContent = id ? 'Edit Task' : 'New Task';
   document.getElementById('btnDelete').style.display = id ? '' : 'none';
   document.getElementById('f-title').value    = t ? t.title : '';
-  document.getElementById('f-assignee').value = t ? (t.assignee || '') : '';
-  document.getElementById('f-due').value      = t ? (t.due || '') : '';
+  document.getElementById('f-location').value = t ? (t.location || '') : '';
   document.getElementById('f-notes').value    = t ? (t.notes || '') : '';
   selectUrgency(t ? (t.urgency || 4) : 4);
   document.getElementById('overlay').classList.add('open');
@@ -446,6 +564,7 @@ function closeModal() {
   editingId = null;
 }
 
+/* ---- CRUD ---- */
 function saveTask() {
   var title = document.getElementById('f-title').value.trim();
   if (!title) { document.getElementById('f-title').focus(); return; }
@@ -454,8 +573,7 @@ function saveTask() {
   var task = {
     id: id,
     title: title,
-    assignee: document.getElementById('f-assignee').value.trim(),
-    due: document.getElementById('f-due').value,
+    location: document.getElementById('f-location').value.trim(),
     notes: document.getElementById('f-notes').value.trim(),
     urgency: selectedUrgency,
     done: old ? old.done : false,
@@ -477,16 +595,14 @@ function deleteTask() {
 }
 
 function toggleDone(id) {
-  var t = tasks[id];
-  if (!t) return;
+  var t = tasks[id]; if (!t) return;
   t.done = !t.done;
   render();
   fbSet(id, t);
 }
 
 function nudgeUrgency(id, dir) {
-  var t = tasks[id];
-  if (!t) return;
+  var t = tasks[id]; if (!t) return;
   t.urgency = Math.min(7, Math.max(1, (t.urgency || 4) + dir));
   render();
   fbSet(id, t);
@@ -500,11 +616,11 @@ function setFilter(f) {
   render();
 }
 
+/* ---- RENDER ---- */
 function formatDue(due) {
   if (!due) return null;
-  var d    = new Date(due + 'T00:00:00');
-  var now  = new Date();
-  now.setHours(0, 0, 0, 0);
+  var d = new Date(due + 'T00:00:00'), now = new Date();
+  now.setHours(0,0,0,0);
   var diff = Math.round((d - now) / 86400000);
   if (diff < 0)   return { text: Math.abs(diff) + 'd overdue', overdue: true };
   if (diff === 0) return { text: 'today', overdue: false };
@@ -514,11 +630,7 @@ function formatDue(due) {
 }
 
 function esc(s) {
-  return String(s || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function uid() {
@@ -536,17 +648,13 @@ function render() {
   list.sort(function(a, b) {
     if (a.done !== b.done) return a.done ? 1 : -1;
     if (a.urgency !== b.urgency) return a.urgency - b.urgency;
-    if (a.due && b.due) return a.due.localeCompare(b.due);
-    if (a.due) return -1;
-    if (b.due) return 1;
     return b.created - a.created;
   });
 
   document.getElementById('emptyState').classList.toggle('show', list.length === 0);
 
   list.forEach(function(t) {
-    var uc  = URGENCY_CLASSES[(t.urgency || 4) - 1];
-    var due = formatDue(t.due);
+    var uc = URGENCY_CLASSES[(t.urgency || 4) - 1];
 
     var card = document.createElement('div');
     card.className = 'task' + (t.done ? ' done' : '');
@@ -559,10 +667,8 @@ function render() {
       '<div class="urgency-bar ' + uc + '"></div>' +
       '<div class="task-body">' +
         '<div class="task-title">' + esc(t.title) + '</div>' +
-        '<div class="task-meta">' +
-          (t.assignee ? '<span class="task-assignee">' + esc(t.assignee) + '</span>' : '') +
-          (due ? '<span class="task-due' + (due.overdue ? ' overdue' : '') + '">' + due.text + '</span>' : '') +
-        '</div>' +
+        (t.location ? '<div class="task-location">' + esc(t.location) + '</div>' : '') +
+        (t.notes ? '<div class="task-notes-preview show">' + esc(t.notes) + '</div>' : '') +
       '</div>' +
       '<div class="task-actions">' +
         '<button class="heat-btn" data-action="up" data-id="' + t.id + '">^</button>' +
@@ -571,39 +677,26 @@ function render() {
         '</button>' +
         '<button class="heat-btn" data-action="down" data-id="' + t.id + '">v</button>' +
       '</div>';
+
     card.appendChild(main);
-
-    if (t.notes) {
-      var notesEl = document.createElement('div');
-      notesEl.className = 'task-notes-preview show';
-      notesEl.textContent = t.notes;
-      card.appendChild(notesEl);
-    }
-
     board.appendChild(card);
   });
 }
 
+/* ---- EVENTS ---- */
 document.addEventListener('click', function(e) {
   var el = e.target;
-
-  var fc = el.closest('.filter-chip');
-  if (fc) { setFilter(fc.dataset.filter); return; }
-
-  var pip = el.closest('.urgency-pip');
-  if (pip) { selectUrgency(parseInt(pip.dataset.u)); return; }
-
+  var fc = el.closest('.filter-chip'); if (fc) { setFilter(fc.dataset.filter); return; }
+  var pip = el.closest('.urgency-pip'); if (pip) { selectUrgency(parseInt(pip.dataset.u)); return; }
   if (el.id === 'addBtn')    { openModal(); return; }
   if (el.id === 'btnSave')   { saveTask(); return; }
   if (el.id === 'btnCancel') { closeModal(); return; }
   if (el.id === 'btnDelete') { deleteTask(); return; }
   if (el.id === 'overlay')   { closeModal(); return; }
-
   var action = el.dataset && el.dataset.action;
   if (action === 'up')    { nudgeUrgency(el.dataset.id, -1); return; }
   if (action === 'down')  { nudgeUrgency(el.dataset.id, 1); return; }
   if (action === 'check') { toggleDone(el.dataset.id); return; }
-
   var card = el.closest('.task');
   if (card && !el.closest('.task-actions')) { openModal(card.dataset.id); return; }
 });
@@ -612,7 +705,14 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeModal();
 });
 
+/* ---- BOOT ---- */
+checkLock();
 startPolling();
+
+/* ---- SERVICE WORKER (PWA) ---- */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(function() {});
+}
 </script>
 </body>
 </html>
