@@ -350,6 +350,24 @@
   .pip7 { background: var(--calm3); }
   .urgency-label-text { font-size: 0.55rem; letter-spacing: 0.08em; margin-top: 4px; color: var(--muted); text-align: center; }
 
+  .notes-toolbar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .fmt-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 2px;
+    transition: border-color 0.15s, color 0.15s;
+    text-decoration: line-through;
+    letter-spacing: 0.05em;
+  }
+  .fmt-btn:hover { border-color: var(--text); color: var(--text); }
+
   .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
   .btn-save {
     flex: 1; background: var(--text); color: var(--bg); border: none;
@@ -427,6 +445,9 @@
     </div>
     <div class="field">
       <label>Notes</label>
+      <div class="notes-toolbar">
+        <button class="fmt-btn" id="btnStrike">S</button>
+      </div>
       <textarea id="f-notes" placeholder="Any context, ideas, references..."></textarea>
     </div>
     <div class="field">
@@ -637,6 +658,15 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 }
 
+function renderNotes(text) {
+  var escaped = esc(text);
+  // Replace ~~text~~ with <s>text</s>
+  escaped = escaped.replace(/~~(.*?)~~/g, '<s>$1</s>');
+  // Preserve line breaks
+  escaped = escaped.replace(/\n/g, '<br>');
+  return escaped;
+}
+
 function render() {
   var board = document.getElementById('board');
   board.querySelectorAll('.task').forEach(function(el) { el.remove(); });
@@ -668,7 +698,7 @@ function render() {
       '<div class="task-body">' +
         '<div class="task-title">' + esc(t.title) + '</div>' +
         (t.location ? '<div class="task-location">' + esc(t.location) + '</div>' : '') +
-        (t.notes ? '<div class="task-notes-preview show">' + esc(t.notes) + '</div>' : '') +
+        (t.notes ? '<div class="task-notes-preview show">' + renderNotes(t.notes) + '</div>' : '') +
       '</div>' +
       '<div class="task-actions">' +
         '<button class="heat-btn" data-action="up" data-id="' + t.id + '">^</button>' +
@@ -684,6 +714,26 @@ function render() {
 }
 
 /* ---- EVENTS ---- */
+document.getElementById('btnStrike').addEventListener('click', function(e) {
+  e.preventDefault();
+  var ta = document.getElementById('f-notes');
+  var start = ta.selectionStart;
+  var end = ta.selectionEnd;
+  var selected = ta.value.substring(start, end);
+  var before = ta.value.substring(0, start);
+  var after = ta.value.substring(end);
+  if (selected.length > 0) {
+    ta.value = before + '~~' + selected + '~~' + after;
+    ta.selectionStart = start;
+    ta.selectionEnd = end + 4;
+  } else {
+    ta.value = before + '~~~~' + after;
+    ta.selectionStart = start + 2;
+    ta.selectionEnd = start + 2;
+  }
+  ta.focus();
+});
+
 document.addEventListener('click', function(e) {
   var el = e.target;
   var fc = el.closest('.filter-chip'); if (fc) { setFilter(fc.dataset.filter); return; }
