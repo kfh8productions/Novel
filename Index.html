@@ -754,6 +754,38 @@ document.getElementById('btnStrike').addEventListener('click', function(e) {
   document.execCommand('strikeThrough', false, null);
 });
 
+// Strip all pasted formatting except strikethrough
+document.getElementById('f-notes').addEventListener('paste', function(e) {
+  e.preventDefault();
+  var html = '';
+  if (e.clipboardData.types.indexOf('text/html') !== -1) {
+    html = e.clipboardData.getData('text/html');
+  } else {
+    html = e.clipboardData.getData('text/plain').replace(/\n/g, '<br>');
+  }
+  // Keep only <s> and <strike> tags, strip everything else
+  var tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  // Walk nodes and rebuild with only text and strikethrough
+  function extract(node) {
+    var out = '';
+    node.childNodes.forEach(function(child) {
+      if (child.nodeType === 3) {
+        out += child.textContent;
+      } else if (child.nodeName === 'S' || child.nodeName === 'STRIKE' || child.nodeName === 'DEL') {
+        out += '<s>' + extract(child) + '</s>';
+      } else if (child.nodeName === 'BR' || child.nodeName === 'P' || child.nodeName === 'DIV') {
+        out += extract(child) + '<br>';
+      } else {
+        out += extract(child);
+      }
+    });
+    return out;
+  }
+  var clean = extract(tmp);
+  document.execCommand('insertHTML', false, clean);
+});
+
 document.addEventListener('click', function(e) {
   var el = e.target;
   var fc = el.closest('.filter-chip'); if (fc) { setFilter(fc.dataset.filter); return; }
