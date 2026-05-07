@@ -333,7 +333,29 @@
     transition: border-color 0.15s; -webkit-appearance: none;
   }
   .field input:focus, .field textarea:focus { border-color: var(--text); }
-  .field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  .notes-editor {
+    width: 100%;
+    background: var(--bg);
+    border: none;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    padding: 10px 12px;
+    outline: none;
+    min-height: 90px;
+    max-height: 200px;
+    overflow-y: auto;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .notes-editor:focus { outline: none; }
+  .notes-editor:empty:before {
+    content: attr(data-placeholder);
+    color: var(--muted2);
+    pointer-events: none;
+  }
+  .notes-editor s { opacity: 0.5; }
 
   .urgency-picker { display: flex; gap: 8px; }
   .urgency-pip {
@@ -349,6 +371,36 @@
   .pip6 { background: var(--calm2); }
   .pip7 { background: var(--calm3); }
   .urgency-label-text { font-size: 0.55rem; letter-spacing: 0.08em; margin-top: 4px; color: var(--muted); text-align: center; }
+
+  .notes-wrap {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    transition: border-color 0.15s;
+  }
+  .notes-wrap:focus-within { border-color: var(--text); }
+  .notes-toolbar {
+    display: flex;
+    gap: 6px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 2;
+  }
+  .fmt-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 2px;
+    transition: border-color 0.15s, color 0.15s;
+    text-decoration: line-through;
+    letter-spacing: 0.05em;
+  }
+  .fmt-btn:hover { border-color: var(--text); color: var(--text); }
 
   .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
   .btn-save {
@@ -427,7 +479,12 @@
     </div>
     <div class="field">
       <label>Notes</label>
-      <textarea id="f-notes" placeholder="Any context, ideas, references..."></textarea>
+      <div class="notes-wrap">
+        <div class="notes-toolbar">
+          <button class="fmt-btn" id="btnStrike">S</button>
+        </div>
+        <div id="f-notes" contenteditable="true" class="notes-editor" data-placeholder="Any context, ideas, references..."></div>
+      </div>
     </div>
     <div class="field">
       <label>Urgency</label>
@@ -553,10 +610,24 @@ function openModal(id) {
   document.getElementById('btnDelete').style.display = id ? '' : 'none';
   document.getElementById('f-title').value    = t ? t.title : '';
   document.getElementById('f-location').value = t ? (t.location || '') : '';
-  document.getElementById('f-notes').value    = t ? (t.notes || '') : '';
+  document.getElementById('f-notes').innerHTML = t ? (t.notes || '') : '';
   selectUrgency(t ? (t.urgency || 4) : 4);
   document.getElementById('overlay').classList.add('open');
-  setTimeout(function() { document.getElementById('f-title').focus(); }, 120);
+  setTimeout(function() {
+    if (id) {
+      var el = document.getElementById('f-notes');
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.focus();
+      var range = document.createRange();
+      var sel = window.getSelection();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } else {
+      document.getElementById('f-title').focus();
+    }
+  }, 300);
 }
 
 function closeModal() {
@@ -574,7 +645,7 @@ function saveTask() {
     id: id,
     title: title,
     location: document.getElementById('f-location').value.trim(),
-    notes: document.getElementById('f-notes').value.trim(),
+    notes: document.getElementById('f-notes').innerHTML.trim(),
     urgency: selectedUrgency,
     done: old ? old.done : false,
     created: old ? old.created : Date.now()
@@ -637,6 +708,13 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 }
 
+function renderNotes(html) {
+  // Notes stored as HTML from contenteditable - safe to render directly
+  // Strip any dangerous tags just in case
+  return html.replace(/<script[^>]*>.*?<\/script>/gi, '')
+             .replace(/on\w+="[^"]*"/gi, '');
+}
+
 function render() {
   var board = document.getElementById('board');
   board.querySelectorAll('.task').forEach(function(el) { el.remove(); });
@@ -668,7 +746,7 @@ function render() {
       '<div class="task-body">' +
         '<div class="task-title">' + esc(t.title) + '</div>' +
         (t.location ? '<div class="task-location">' + esc(t.location) + '</div>' : '') +
-        (t.notes ? '<div class="task-notes-preview show">' + esc(t.notes) + '</div>' : '') +
+        (t.notes ? '<div class="task-notes-preview show">' + renderNotes(t.notes) + '</div>' : '') +
       '</div>' +
       '<div class="task-actions">' +
         '<button class="heat-btn" data-action="up" data-id="' + t.id + '">^</button>' +
@@ -684,6 +762,19 @@ function render() {
 }
 
 /* ---- EVENTS ---- */
+document.getElementById('btnStrike').addEventListener('click', function(e) {
+  e.preventDefault();
+  document.getElementById('f-notes').focus();
+  document.execCommand('strikeThrough', false, null);
+});
+
+// Paste as plain text only -- strip all formatting
+document.getElementById('f-notes').addEventListener('paste', function(e) {
+  e.preventDefault();
+  var text = e.clipboardData.getData('text/plain');
+  document.execCommand('insertText', false, text);
+});
+
 document.addEventListener('click', function(e) {
   var el = e.target;
   var fc = el.closest('.filter-chip'); if (fc) { setFilter(fc.dataset.filter); return; }
