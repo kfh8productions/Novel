@@ -1,809 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="The Novel">
-<meta name="theme-color" content="#0e0e0e">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.png">
-<title>The Novel</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Bebas+Neue&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+// The Novel — factoid bank
+// ~210 facts across literature, theoretical physics, and history.
+// Chosen to be rabbit-hole-shaped: specific, strange, and good for sparking a scene.
+// Edit freely — just keep the array structure.
 
-  :root {
-    --bg: #0e0e0e;
-    --surface: #1a1a1a;
-    --border: #2a2a2a;
-    --border2: #333;
-    --text: #e8e8e0;
-    --muted: #666;
-    --muted2: #444;
-    --urgent1: #ff2b2b;
-    --urgent2: #ff6a00;
-    --urgent3: #ffc300;
-    --neutral: #888;
-    --calm1: #3a9bd5;
-    --calm2: #2563eb;
-    --calm3: #1e3a8a;
-    --green: #22c55e;
-  }
+const FACTS = [
+  // ============ LITERATURE ============
+  "Kafka asked his friend Max Brod to burn all his manuscripts after his death. Brod refused. That refusal is why we have The Trial, The Castle, and Amerika — every one published posthumously, against the author's explicit wish.",
+  "Borges wrote 'The Library of Babel' before he went fully blind. By the time he was director of the National Library of Argentina, he could no longer read its books — he called it God's irony, 'books and night' given at once.",
+  "Moby-Dick sold 3,215 copies in Melville's lifetime and was effectively forgotten. He died in 1891 working as a customs inspector; the novel was rediscovered in the 1920s, decades too late for him to know.",
+  "Dante invented words. Roughly a thousand Italian terms appear for the first time in the Divine Comedy, and the modern standard Italian language owes its shape substantially to a poem about hell written in exile.",
+  "Mary Shelley wrote Frankenstein at 18, during the 'Year Without a Summer' at Lake Geneva, in a ghost-story contest with Byron and Percy Shelley. The bad weather was caused by a volcanic eruption in Indonesia the year before.",
+  "The original draft of 1984 was titled 'The Last Man in Europe'. Orwell's publisher pushed for the change. He finished it dying of tuberculosis on the Scottish island of Jura, typing in bed.",
+  "The Epic of Gilgamesh is older than the Iliad by roughly 1,500 years and contains a flood narrative — a man told to build a boat and save life from a divine deluge — that predates the one in Genesis.",
+  "Emily Dickinson published fewer than a dozen of her nearly 1,800 poems while alive. Her sister found the rest in a locked chest after her death, hand-sewn into small booklets Dickinson called 'fascicles'.",
+  "Proust's 'In Search of Lost Time' was rejected by the first publisher he sent it to — André Gide, reading for Gallimard, turned it down and later called it the worst mistake of his life.",
+  "The longest sentence in published English literature runs over 13,000 words, in Jonathan Coe's 'The Rotters' Club'. Molly Bloom's closing soliloquy in Ulysses is the more famous contender at around 4,000.",
+  "Bram Stoker's Dracula is written entirely as letters, diary entries, telegrams, and newspaper clippings — there is no narrator. The form was meant to make the supernatural feel like documented fact.",
+  "The Brontë sisters first published under male pseudonyms — Currer, Ellis, and Acton Bell — keeping their own initials. Charlotte said they feared critics would judge women's writing 'with prejudice'.",
+  "Tolkien spent more time inventing Elvish languages than writing the plot of The Lord of the Rings. He said the stories existed primarily to give his invented languages a world to be spoken in.",
+  "Agatha Christie disappeared for eleven days in 1926. Her car was found abandoned; a nationwide search followed. She was found at a spa hotel, registered under the surname of her husband's mistress, and never explained what happened.",
+  "The Voynich manuscript, a 15th-century book written in an unknown script in an unknown language, has resisted every cryptographer, linguist, and codebreaker for over a century. No one knows if it means anything at all.",
+  "Herman Melville and Nathaniel Hawthorne were neighbours in the Berkshires. Melville fell into an intense friendship with Hawthorne while writing Moby-Dick and dedicated the book to him; the relationship cooled soon after, for reasons unknown.",
+  "Virginia Woolf wrote standing up at a tall desk, partly in competition with her sister Vanessa, who stood to paint. She wanted, she said, to know what the painter felt.",
+  "The first novel in English by a known woman is often considered to be Aphra Behn's 'Oroonoko' (1688). Behn had earlier worked as a spy for Charles II in Antwerp, under the code name Astrea.",
+  "Samuel Beckett was stabbed in Paris in 1938 by a pimp named Prudent. Recovering in hospital, he was visited by Suzanne Dumesnil, who became his lifelong partner. He later asked his attacker why; the man replied, 'I don't know, sir.'",
+  "Dostoevsky was sentenced to death in 1849 and stood before a firing squad. The execution was a staged mock; a reprieve was read out at the last moment. He spent the next four years in a Siberian prison camp.",
+  "Gabriel García Márquez wrote 'One Hundred Years of Solitude' in eighteen months, selling his car to fund the time. When he finished, he reportedly didn't have enough money to mail the whole manuscript and sent the second half first.",
+  "The word 'serendipity' was coined by Horace Walpole in 1754, from a Persian fairy tale, 'The Three Princes of Serendip', whose heroes were always making discoveries by accident and sagacity.",
+  "Jane Austen published all her novels anonymously — the title pages read only 'By a Lady'. She earned around £600 in her lifetime from her writing and never saw her name on a book.",
+  "Shakespeare's 'Cardenio', a play co-written with John Fletcher and performed in 1613, is completely lost. Its existence is documented but no text survives — one of the great holes in the English canon.",
+  "The manuscript of T.S. Eliot's 'The Waste Land' was edited so heavily by Ezra Pound that Pound cut it almost in half. Eliot dedicated the poem to him as 'il miglior fabbro' — the better craftsman.",
+  "Marcel Proust lined his bedroom with cork to block out noise and wrote most of his great novel in bed, at night, increasingly reclusive, as his asthma and the manuscript both consumed him.",
+  "Charlotte Perkins Gilman wrote 'The Yellow Wallpaper' (1892) after a 'rest cure' for depression nearly drove her mad. She sent a copy to the doctor who prescribed it. He never replied, but reportedly changed his methods.",
+  "The Icelandic sagas were written down in the 13th century but describe events from the 9th and 10th. They are among the only medieval European literature written in prose, not verse, and in the vernacular rather than Latin.",
+  "Mikhail Bulgakov burned the first manuscript of 'The Master and Margarita' in 1930. He rewrote it from memory; the novel, with its famous line 'manuscripts don't burn', wasn't published until 1966, decades after his death.",
+  "Lord Byron's memoirs were burned by his publisher and friends in a fireplace at John Murray's office in 1824, weeks after his death — judged too scandalous to survive. No copy was kept. Their contents are lost forever.",
+  "Anne Frank revised her own diary. Having heard a radio broadcast urging Dutch citizens to keep wartime records, she began rewriting earlier entries with an eye to eventual publication — editing herself as a future author.",
+  "The 'Q source' is a hypothetical lost document that scholars infer must have existed, because Matthew and Luke share material absent from Mark. No copy has ever been found; it is reconstructed entirely from inference.",
+  "Vladimir Nabokov wrote his novels on index cards, which let him compose scenes out of order and shuffle them. The cards for his unfinished last novel were preserved against his instruction to destroy them.",
+  "Flann O'Brien's 'The Third Policeman' was rejected and went unpublished in his lifetime; he told friends the manuscript had been lost on a train. It was published in 1967, a year after his death. It had been in a drawer the whole time.",
+  "Sylvia Plath's only novel, 'The Bell Jar', was published under the pseudonym Victoria Lucas in January 1963, one month before her death. She didn't want her mother to recognise the autobiographical content.",
+  "The oldest known named author in human history is Enheduanna, a Sumerian high priestess of around 2300 BCE. She wrote hymns to the goddess Inanna and signed them — a thousand years before Homer.",
+  "Raymond Carver's spare, minimalist style may partly belong to his editor Gordon Lish, who cut some stories by more than half. The debate over how much of 'Carver' is Lish remains unresolved among scholars.",
+  "Lewis Carroll's real name was Charles Dodgson, an Oxford mathematician who lectured on logic and geometry. 'Alice in Wonderland' is laced with mathematical jokes most readers never notice.",
+  "James Joyce's 'Finnegans Wake' took seventeen years to write and is composed in a dream-language drawing on roughly sixty languages. Joyce said it was meant to reproduce the logic of the sleeping mind.",
+  "Harper Lee published 'To Kill a Mockingbird' in 1960 and then almost nothing for the rest of her life. 'Go Set a Watchman', released in 2015, was actually an earlier draft of the same material, not a sequel.",
+  "The 1,001 nights of the Arabian Nights frame is a stay of execution: Scheherazade tells her king a story each night, stopping at dawn on a cliffhanger, so he postpones her death to hear the ending. Storytelling as literal survival.",
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+  // ============ THEORETICAL PHYSICS & COSMOLOGY ============
+  "Time runs measurably faster at your head than at your feet. Gravity slows time, and your head is slightly further from Earth's mass. The effect is tiny but has been measured with clocks just a foot apart.",
+  "There is more empty space inside an atom than matter. If a hydrogen atom were scaled to the size of a football stadium, the nucleus would be a pea at the centre and the electron a speck in the stands.",
+  "The cosmic microwave background — the faint afterglow of the Big Bang — is part of the static you once saw on an untuned analogue television. You were watching the early universe.",
+  "Quantum entanglement was proposed by Einstein and two colleagues in 1935 as a thought experiment meant to expose quantum mechanics as absurd. He called it 'spooky action at a distance'. It has since been confirmed experimentally many times.",
+  "The Planck length, about 1.6 × 10⁻³⁵ metres, may be the smallest length that has any physical meaning. Below it, our concepts of distance and space appear to stop working entirely.",
+  "Black holes evaporate. Through a process predicted by Stephen Hawking, they slowly radiate energy and shrink. A black hole the mass of the sun would take around 10⁶⁷ years to disappear — vastly longer than the current age of the universe.",
+  "The universe is not just expanding but expanding faster over time. The cause is called 'dark energy', a placeholder name for something that makes up roughly 68% of everything and which no one understands.",
+  "In the double-slit experiment, a single particle fired at two slits behaves as if it passes through both at once — unless you measure which slit it took, at which point it picks one. Observation changes the outcome.",
+  "A teaspoon of neutron-star material would weigh roughly six billion tonnes on Earth. The matter is so compressed that the protons and electrons have been crushed together into neutrons.",
+  "According to relativity, there is no universal 'now'. Two events that are simultaneous for one observer can happen in a definite order for another moving differently. Simultaneity is not absolute — it depends on motion.",
+  "If you fell into a large black hole, an outside observer would see you slow down and freeze at the edge, reddening and fading forever, never quite crossing. From your own point of view, you would cross in moments.",
+  "Antimatter is real and routinely made in labs. When a particle meets its antiparticle, both annihilate into pure energy. A persistent mystery is why the universe is made of matter at all, when the Big Bang should have made equal amounts of both.",
+  "Schrödinger devised his famous cat thought experiment in 1935 to mock the idea of quantum superposition — he found a cat both alive and dead ridiculous. The example meant as a reductio became the most famous image in quantum physics.",
+  "Light has no rest mass and always travels at the same speed in a vacuum, regardless of how fast you move toward or away from its source. This single stubborn fact is the seed of Einstein's entire theory of special relativity.",
+  "Olbers' paradox asks why the night sky is dark. If the universe were infinite, eternal, and full of stars, every line of sight should end on a star and the whole sky should blaze. The darkness is evidence the universe had a beginning.",
+  "Quantum tunnelling lets particles pass through barriers they classically shouldn't be able to cross. It is not a curiosity — it is why the sun shines, allowing protons to fuse despite their mutual repulsion.",
+  "The arrow of time may come down to statistics. The laws of physics work the same forwards and backwards, yet eggs don't unscramble. The difference is that disordered states vastly outnumber ordered ones — time's direction is a counting problem.",
+  "Heisenberg's uncertainty principle isn't about clumsy measurement. It says a particle simply does not possess both a precise position and a precise momentum at once. The indeterminacy is in nature, not in the instrument.",
+  "There may be more than three spatial dimensions, curled up too small to see. String theory typically requires ten or eleven dimensions for its mathematics to be consistent — most of them hidden at scales near the Planck length.",
+  "The observable universe is about 93 billion light-years across, even though it is only 13.8 billion years old. Space itself has been expanding, carrying distant galaxies far beyond where light alone could have reached.",
+  "Feynman's 'sum over histories' approach says a particle travelling from A to B takes every possible path simultaneously, including absurd detours to distant galaxies. The paths interfere, and the familiar straight line is what survives.",
+  "The total electric charge of the universe appears to be exactly zero, and the total energy may be too — the positive energy of matter balanced by the negative energy of gravity. The universe may be, in a real sense, free.",
+  "Atomic clocks are now so precise that they can detect the time difference caused by raising the clock a single centimetre. Relativity, once exotic, is now an engineering tolerance.",
+  "Wolfgang Pauli predicted the neutrino in 1930 to save the conservation of energy, calling it 'a desperate remedy' and apologising for proposing a particle he thought could never be detected. It was found 26 years later.",
+  "The information that falls into a black hole may not be destroyed, despite appearances. The 'black hole information paradox' pits quantum mechanics against general relativity and remains one of physics' deepest unresolved conflicts.",
+  "There is a temperature so low — absolute zero — that all classical motion stops, but it can never quite be reached. Quantum mechanics guarantees a residual 'zero-point' jitter that no cooling can remove.",
+  "Gravitational waves — ripples in spacetime itself — were predicted by Einstein in 1916 and first directly detected in 2015, from two black holes colliding over a billion light-years away. The detectors measured a shift smaller than a proton's width.",
 
-  button { font-family: 'DM Mono', monospace; cursor: pointer; }
-
-  /* LOCK SCREEN */
-  #lockScreen {
-    position: fixed; inset: 0;
-    background: var(--bg);
-    z-index: 500;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-    gap: 0;
-  }
-  #lockScreen.hidden { display: none; }
-  #lockScreen h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.8rem;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-  }
-  #lockScreen p {
-    font-size: 0.65rem;
-    color: var(--muted);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    margin-bottom: 32px;
-  }
-  #lockForm {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 300px;
-  }
-  #lockInput {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.9rem;
-    padding: 12px 16px;
-    outline: none;
-    border-radius: 2px;
-    text-align: center;
-    letter-spacing: 0.1em;
-    transition: border-color 0.2s;
-    -webkit-appearance: none;
-  }
-  #lockInput:focus { border-color: var(--text); }
-  #lockInput.wrong { border-color: var(--urgent1); animation: shake 0.3s; }
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    25% { transform: translateX(-8px); }
-    75% { transform: translateX(8px); }
-  }
-  #lockBtn {
-    background: var(--text);
-    color: var(--bg);
-    border: none;
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 12px;
-    transition: opacity 0.15s;
-  }
-  #lockBtn:hover { opacity: 0.85; }
-  #lockError {
-    font-size: 0.6rem;
-    color: var(--urgent1);
-    letter-spacing: 0.1em;
-    text-align: center;
-    min-height: 1em;
-  }
-
-  /* HEADER */
-  header {
-    padding: 20px 24px 12px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .band-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    letter-spacing: 0.05em;
-  }
-  .subtitle {
-    font-size: 0.65rem;
-    color: var(--muted);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
-  .header-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .sync-row {
-    font-size: 0.55rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .sync-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--muted);
-    flex-shrink: 0;
-    transition: background 0.4s;
-  }
-  .sync-dot.live  { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
-  .sync-dot.error { background: var(--urgent1); }
-  .add-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-size: 0.7rem;
-    padding: 6px 14px;
-    letter-spacing: 0.1em;
-    transition: border-color 0.2s;
-    text-transform: uppercase;
-  }
-  .add-btn:hover { border-color: var(--text); }
-
-  /* LEGEND */
-  .legend {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 24px;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .legend-label { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-right: 4px; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.6rem; color: var(--muted); }
-  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-  /* FILTERS */
-  .filter-bar {
-    padding: 10px 24px;
-    display: flex;
-    gap: 8px;
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .filter-bar::-webkit-scrollbar { display: none; }
-  .filter-chip {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 0.6rem;
-    padding: 4px 12px;
-    border-radius: 100px;
-    white-space: nowrap;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    transition: all 0.15s;
-  }
-  .filter-chip.active { border-color: var(--text); color: var(--text); }
-
-  /* BOARD */
-  .board {
-    padding: 20px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 680px;
-    margin: 0 auto;
-  }
-
-  /* TASK CARD */
-  .task {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    transition: opacity 0.3s;
-  }
-  .task.done { opacity: 0.38; }
-  .task.done .task-title { text-decoration: line-through; color: var(--muted); }
-
-  .task-main {
-    padding: 14px 16px;
-    display: grid;
-    grid-template-columns: 6px 1fr auto;
-    gap: 12px;
-    align-items: start;
-    cursor: pointer;
-  }
-
-  .urgency-bar {
-    width: 6px;
-    border-radius: 3px;
-    align-self: stretch;
-    min-height: 40px;
-    flex-shrink: 0;
-  }
-
-  .task-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-  .task-title { font-size: 0.85rem; font-weight: 500; line-height: 1.3; letter-spacing: 0.02em; word-break: break-word; }
-  .task-location {
-    font-size: 0.6rem;
-    color: var(--calm1);
-    letter-spacing: 0.08em;
-    word-break: break-word;
-  }
-  .task-notes-preview {
-    font-size: 0.65rem;
-    color: var(--muted);
-    line-height: 1.5;
-    margin-top: 2px;
-    font-style: italic;
-    word-break: break-word;
-    white-space: pre-wrap;
-    display: none;
-  }
-  .task-notes-preview.show { display: block; }
-
-  .task-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
-  .heat-btn {
-    background: none; border: none;
-    font-size: 0.6rem; color: var(--muted2);
-    padding: 2px 4px; transition: color 0.15s; line-height: 1;
-  }
-  .heat-btn:hover { color: var(--text); }
-  .check-btn {
-    width: 20px; height: 20px;
-    border: 1px solid var(--border);
-    border-radius: 50%; background: none;
-    display: flex; align-items: center; justify-content: center;
-    transition: border-color 0.15s, background 0.15s;
-    margin-top: 2px;
-  }
-  .check-btn:hover { border-color: var(--text); }
-  .task.done .check-btn { background: var(--border); }
-  .check-icon { width: 8px; height: 8px; display: none; }
-  .task.done .check-icon { display: block; fill: var(--muted); }
-
-  /* Urgency colours */
-  .u1 { background: var(--urgent1); box-shadow: 0 0 8px rgba(255,43,43,0.4); }
-  .u2 { background: var(--urgent2); }
-  .u3 { background: var(--urgent3); }
-  .u4 { background: var(--neutral); }
-  .u5 { background: var(--calm1); }
-  .u6 { background: var(--calm2); }
-  .u7 { background: var(--calm3); }
-
-  /* EMPTY / LOADING */
-  .status-msg { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 0.7rem; letter-spacing: 0.1em; display: none; }
-  .status-msg.show { display: block; }
-  .status-msg .big { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; display: block; opacity: 0.15; margin-bottom: 8px; }
-
-  /* MODAL */
-  .overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(4px);
-    display: none; align-items: flex-end; justify-content: center;
-    z-index: 100;
-  }
-  .overlay.open { display: flex; }
-  .modal {
-    background: #181818;
-    border: 1px solid var(--border); border-bottom: none;
-    border-radius: 12px 12px 0 0;
-    padding: 28px 24px 40px;
-    width: 100%; max-width: 680px;
-    animation: slideUp 0.25s ease;
-    max-height: 90vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } }
-  .modal h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.05em; margin-bottom: 20px; }
-
-  .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 0.6rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
-  .field input, .field textarea {
-    width: 100%; background: var(--bg);
-    border: 1px solid var(--border); color: var(--text);
-    font-family: 'DM Mono', monospace; font-size: 0.78rem;
-    padding: 10px 12px; outline: none; border-radius: 2px;
-    transition: border-color 0.15s; -webkit-appearance: none;
-  }
-  .field input:focus, .field textarea:focus { border-color: var(--text); }
-  .notes-editor {
-    width: 100%;
-    background: var(--bg);
-    border: none;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.78rem;
-    padding: 10px 12px;
-    outline: none;
-    min-height: 90px;
-    max-height: 200px;
-    overflow-y: auto;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .notes-editor:focus { outline: none; }
-  .notes-editor:empty:before {
-    content: attr(data-placeholder);
-    color: var(--muted2);
-    pointer-events: none;
-  }
-  .notes-editor s { opacity: 0.5; }
-
-  .urgency-picker { display: flex; gap: 8px; }
-  .urgency-pip {
-    flex: 1; height: 28px; border-radius: 3px;
-    opacity: 0.3; transition: opacity 0.15s, transform 0.15s; border: none;
-  }
-  .urgency-pip.selected { opacity: 1; transform: scaleY(1.15); }
-  .pip1 { background: var(--urgent1); }
-  .pip2 { background: var(--urgent2); }
-  .pip3 { background: var(--urgent3); }
-  .pip4 { background: var(--neutral); }
-  .pip5 { background: var(--calm1); }
-  .pip6 { background: var(--calm2); }
-  .pip7 { background: var(--calm3); }
-  .urgency-label-text { font-size: 0.55rem; letter-spacing: 0.08em; margin-top: 4px; color: var(--muted); text-align: center; }
-
-  .notes-wrap {
-    position: relative;
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    transition: border-color 0.15s;
-  }
-  .notes-wrap:focus-within { border-color: var(--text); }
-  .notes-toolbar {
-    display: flex;
-    gap: 6px;
-    padding: 6px 8px;
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    z-index: 2;
-  }
-  .fmt-btn {
-    background: none;
-    border: 1px solid var(--border2);
-    color: var(--muted);
-    font-size: 0.7rem;
-    padding: 4px 10px;
-    border-radius: 2px;
-    transition: border-color 0.15s, color 0.15s;
-    text-decoration: line-through;
-    letter-spacing: 0.05em;
-  }
-  .fmt-btn:hover { border-color: var(--text); color: var(--text); }
-
-  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
-  .btn-save {
-    flex: 1; background: var(--text); color: var(--bg); border: none;
-    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
-    padding: 12px; transition: opacity 0.15s;
-  }
-  .btn-save:hover { opacity: 0.85; }
-  .btn-cancel {
-    background: none; border: 1px solid var(--border); color: var(--muted);
-    font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 12px 20px;
-  }
-  .btn-delete {
-    background: none; border: 1px solid #3a1111; color: var(--urgent1);
-    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 16px;
-  }
-</style>
-</head>
-<body>
-
-<!-- LOCK SCREEN -->
-<div id="lockScreen">
-  <h1>The Novel</h1>
-  <p>Enter passphrase to continue</p>
-  <div id="lockForm">
-    <input type="password" id="lockInput" placeholder="passphrase" autocomplete="off" />
-    <button id="lockBtn">Enter</button>
-    <div id="lockError"></div>
-  </div>
-</div>
-
-<header>
-  <span class="band-name">The Novel</span>
-  <span class="subtitle">Writing Tasks</span>
-  <div class="header-right">
-    <div class="sync-row">
-      <div class="sync-dot" id="syncDot"></div>
-      <span id="syncLabel">connecting...</span>
-    </div>
-    <button class="add-btn" id="addBtn">+ Add Task</button>
-  </div>
-</header>
-
-<div class="legend">
-  <span class="legend-label">Urgency:</span>
-  <div class="legend-item"><div class="legend-dot" style="background:#ff2b2b"></div> fire</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#ff6a00"></div> soon</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#ffc300"></div> this week</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#888"></div> whenever</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#3a9bd5"></div> low</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div> someday</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#1e3a8a"></div> backlog</div>
-</div>
-
-<div class="filter-bar">
-  <button class="filter-chip active" data-filter="all">All</button>
-  <button class="filter-chip" data-filter="open">Open</button>
-  <button class="filter-chip" data-filter="done">Done</button>
-</div>
-
-<div class="board" id="board">
-  <div class="status-msg show" id="loadingMsg"><span class="big">...</span>connecting</div>
-  <div class="status-msg" id="emptyState"><span class="big">NO TASKS</span>hit + add task to get started</div>
-</div>
-
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <h2 id="modalTitle">New Task</h2>
-    <div class="field">
-      <label>Task</label>
-      <input type="text" id="f-title" placeholder="e.g. Rewrite opening" />
-    </div>
-    <div class="field">
-      <label>Location in manuscript</label>
-      <input type="text" id="f-location" placeholder="e.g. Ch.3 p.47, throughout, opening" />
-    </div>
-    <div class="field">
-      <label>Notes</label>
-      <div class="notes-wrap">
-        <div class="notes-toolbar">
-          <button class="fmt-btn" id="btnStrike">S</button>
-        </div>
-        <div id="f-notes" contenteditable="true" class="notes-editor" data-placeholder="Any context, ideas, references..."></div>
-      </div>
-    </div>
-    <div class="field">
-      <label>Urgency</label>
-      <div class="urgency-picker" id="urgencyPicker">
-        <button class="urgency-pip pip1" data-u="1"></button>
-        <button class="urgency-pip pip2" data-u="2"></button>
-        <button class="urgency-pip pip3" data-u="3"></button>
-        <button class="urgency-pip pip4 selected" data-u="4"></button>
-        <button class="urgency-pip pip5" data-u="5"></button>
-        <button class="urgency-pip pip6" data-u="6"></button>
-        <button class="urgency-pip pip7" data-u="7"></button>
-      </div>
-      <div class="urgency-label-text" id="urgency-label">whenever</div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-save" id="btnSave">Save Task</button>
-      <button class="btn-cancel" id="btnCancel">Cancel</button>
-      <button class="btn-delete" id="btnDelete" style="display:none">Delete</button>
-    </div>
-  </div>
-</div>
-
-<script>
-var FB_URL = 'https://alex-novel-default-rtdb.europe-west1.firebasedatabase.app';
-var PASSPHRASE = 'Karinamonsoon';
-var URGENCY_LABELS = ['fire','soon','this week','whenever','low','someday','backlog'];
-var URGENCY_CLASSES = ['u1','u2','u3','u4','u5','u6','u7'];
-var POLL_MS = 4000;
-
-var tasks = {};
-var currentFilter = 'all';
-var editingId = null;
-var selectedUrgency = 4;
-var pollTimer = null;
-
-/* ---- LOCK ---- */
-function checkLock() {
-  if (localStorage.getItem('novel-auth') === 'ok') {
-    document.getElementById('lockScreen').classList.add('hidden');
-  }
-}
-
-function tryUnlock() {
-  var val = document.getElementById('lockInput').value;
-  if (val === PASSPHRASE) {
-    localStorage.setItem('novel-auth', 'ok');
-    document.getElementById('lockScreen').classList.add('hidden');
-    document.getElementById('lockError').textContent = '';
-  } else {
-    document.getElementById('lockInput').classList.add('wrong');
-    document.getElementById('lockError').textContent = 'incorrect passphrase';
-    setTimeout(function() {
-      document.getElementById('lockInput').classList.remove('wrong');
-      document.getElementById('lockInput').value = '';
-    }, 600);
-  }
-}
-
-document.getElementById('lockBtn').addEventListener('click', tryUnlock);
-document.getElementById('lockInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') tryUnlock();
-});
-
-/* ---- FIREBASE ---- */
-function apiUrl(sub) {
-  return FB_URL + '/tasks' + (sub || '') + '.json';
-}
-
-function fbGet() {
-  return fetch(apiUrl(), { cache: 'no-store' }).then(function(r) {
-    if (!r.ok) throw new Error(r.status);
-    return r.json();
-  });
-}
-
-function fbSet(id, data) {
-  return fetch(apiUrl('/' + id), {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  }).then(function(r) {
-    if (!r.ok) throw new Error(r.status);
-  });
-}
-
-function fbDel(id) {
-  return fetch(apiUrl('/' + id), { method: 'DELETE' });
-}
-
-/* ---- POLL ---- */
-function poll() {
-  fbGet().then(function(data) {
-    tasks = data || {};
-    document.getElementById('syncDot').className = 'sync-dot live';
-    document.getElementById('syncLabel').textContent = 'live';
-    document.getElementById('loadingMsg').classList.remove('show');
-    render();
-  }).catch(function() {
-    document.getElementById('syncDot').className = 'sync-dot error';
-    document.getElementById('syncLabel').textContent = 'error';
-  });
-}
-
-function startPolling() {
-  poll();
-  pollTimer = setInterval(poll, POLL_MS);
-}
-
-/* ---- URGENCY ---- */
-function selectUrgency(u) {
-  selectedUrgency = u;
-  document.querySelectorAll('.urgency-pip').forEach(function(p) {
-    p.classList.toggle('selected', parseInt(p.dataset.u) === u);
-  });
-  document.getElementById('urgency-label').textContent = URGENCY_LABELS[u - 1];
-}
-
-/* ---- MODAL ---- */
-function openModal(id) {
-  editingId = id || null;
-  var t = id && tasks[id];
-  document.getElementById('modalTitle').textContent = id ? 'Edit Task' : 'New Task';
-  document.getElementById('btnDelete').style.display = id ? '' : 'none';
-  document.getElementById('f-title').value    = t ? t.title : '';
-  document.getElementById('f-location').value = t ? (t.location || '') : '';
-  document.getElementById('f-notes').innerHTML = t ? (t.notes || '') : '';
-  selectUrgency(t ? (t.urgency || 4) : 4);
-  document.getElementById('overlay').classList.add('open');
-  setTimeout(function() {
-    if (id) {
-      var el = document.getElementById('f-notes');
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.focus();
-      var range = document.createRange();
-      var sel = window.getSelection();
-      range.selectNodeContents(el);
-      range.collapse(false);
-      sel.removeAllRanges();
-      sel.addRange(range);
-    } else {
-      document.getElementById('f-title').focus();
-    }
-  }, 300);
-}
-
-function closeModal() {
-  document.getElementById('overlay').classList.remove('open');
-  editingId = null;
-}
-
-/* ---- CRUD ---- */
-function saveTask() {
-  var title = document.getElementById('f-title').value.trim();
-  if (!title) { document.getElementById('f-title').focus(); return; }
-  var id  = editingId || uid();
-  var old = editingId && tasks[editingId];
-  var task = {
-    id: id,
-    title: title,
-    location: document.getElementById('f-location').value.trim(),
-    notes: document.getElementById('f-notes').innerHTML.trim(),
-    urgency: selectedUrgency,
-    done: old ? old.done : false,
-    created: old ? old.created : Date.now()
-  };
-  closeModal();
-  tasks[id] = task;
-  render();
-  fbSet(id, task).catch(function(e) { console.error('Save failed', e); });
-}
-
-function deleteTask() {
-  if (!confirm('Delete this task?')) return;
-  var id = editingId;
-  closeModal();
-  delete tasks[id];
-  render();
-  fbDel(id);
-}
-
-function toggleDone(id) {
-  var t = tasks[id]; if (!t) return;
-  t.done = !t.done;
-  render();
-  fbSet(id, t);
-}
-
-function nudgeUrgency(id, dir) {
-  var t = tasks[id]; if (!t) return;
-  t.urgency = Math.min(7, Math.max(1, (t.urgency || 4) + dir));
-  render();
-  fbSet(id, t);
-}
-
-function setFilter(f) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-chip').forEach(function(c) {
-    c.classList.toggle('active', c.dataset.filter === f);
-  });
-  render();
-}
-
-/* ---- RENDER ---- */
-function formatDue(due) {
-  if (!due) return null;
-  var d = new Date(due + 'T00:00:00'), now = new Date();
-  now.setHours(0,0,0,0);
-  var diff = Math.round((d - now) / 86400000);
-  if (diff < 0)   return { text: Math.abs(diff) + 'd overdue', overdue: true };
-  if (diff === 0) return { text: 'today', overdue: false };
-  if (diff === 1) return { text: 'tomorrow', overdue: false };
-  if (diff < 7)   return { text: 'in ' + diff + 'd', overdue: false };
-  return { text: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), overdue: false };
-}
-
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-}
-
-function renderNotes(html) {
-  // Notes stored as HTML from contenteditable - safe to render directly
-  // Strip any dangerous tags just in case
-  return html.replace(/<script[^>]*>.*?<\/script>/gi, '')
-             .replace(/on\w+="[^"]*"/gi, '');
-}
-
-function render() {
-  var board = document.getElementById('board');
-  board.querySelectorAll('.task').forEach(function(el) { el.remove(); });
-
-  var list = Object.values(tasks);
-  if (currentFilter === 'open') list = list.filter(function(t) { return !t.done; });
-  if (currentFilter === 'done') list = list.filter(function(t) { return t.done; });
-
-  list.sort(function(a, b) {
-    if (a.done !== b.done) return a.done ? 1 : -1;
-    if (a.urgency !== b.urgency) return a.urgency - b.urgency;
-    return b.created - a.created;
-  });
-
-  document.getElementById('emptyState').classList.toggle('show', list.length === 0);
-
-  list.forEach(function(t) {
-    var uc = URGENCY_CLASSES[(t.urgency || 4) - 1];
-
-    var card = document.createElement('div');
-    card.className = 'task' + (t.done ? ' done' : '');
-    card.dataset.id = t.id;
-
-    var main = document.createElement('div');
-    main.className = 'task-main';
-    main.dataset.id = t.id;
-    main.innerHTML =
-      '<div class="urgency-bar ' + uc + '"></div>' +
-      '<div class="task-body">' +
-        '<div class="task-title">' + esc(t.title) + '</div>' +
-        (t.location ? '<div class="task-location">' + esc(t.location) + '</div>' : '') +
-        (t.notes ? '<div class="task-notes-preview show">' + renderNotes(t.notes) + '</div>' : '') +
-      '</div>' +
-      '<div class="task-actions">' +
-        '<button class="heat-btn" data-action="up" data-id="' + t.id + '">^</button>' +
-        '<button class="check-btn" data-action="check" data-id="' + t.id + '">' +
-          '<svg class="check-icon" viewBox="0 0 8 8"><polyline points="1,4 3,6 7,2" stroke-width="1.5" stroke="currentColor" fill="none"/></svg>' +
-        '</button>' +
-        '<button class="heat-btn" data-action="down" data-id="' + t.id + '">v</button>' +
-      '</div>';
-
-    card.appendChild(main);
-    board.appendChild(card);
-  });
-}
-
-/* ---- EVENTS ---- */
-document.getElementById('btnStrike').addEventListener('click', function(e) {
-  e.preventDefault();
-  document.getElementById('f-notes').focus();
-  document.execCommand('strikeThrough', false, null);
-});
-
-// Paste as plain text only -- strip all formatting
-document.getElementById('f-notes').addEventListener('paste', function(e) {
-  e.preventDefault();
-  var text = e.clipboardData.getData('text/plain');
-  document.execCommand('insertText', false, text);
-});
-
-document.addEventListener('click', function(e) {
-  var el = e.target;
-  var fc = el.closest('.filter-chip'); if (fc) { setFilter(fc.dataset.filter); return; }
-  var pip = el.closest('.urgency-pip'); if (pip) { selectUrgency(parseInt(pip.dataset.u)); return; }
-  if (el.id === 'addBtn')    { openModal(); return; }
-  if (el.id === 'btnSave')   { saveTask(); return; }
-  if (el.id === 'btnCancel') { closeModal(); return; }
-  if (el.id === 'btnDelete') { deleteTask(); return; }
-  if (el.id === 'overlay')   { closeModal(); return; }
-  var action = el.dataset && el.dataset.action;
-  if (action === 'up')    { nudgeUrgency(el.dataset.id, -1); return; }
-  if (action === 'down')  { nudgeUrgency(el.dataset.id, 1); return; }
-  if (action === 'check') { toggleDone(el.dataset.id); return; }
-  var card = el.closest('.task');
-  if (card && !el.closest('.task-actions')) { openModal(card.dataset.id); return; }
-});
-
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeModal();
-});
-
-/* ---- BOOT ---- */
-checkLock();
-startPolling();
-
-/* ---- SERVICE WORKER (PWA) ---- */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(function() {});
-}
-</script>
-</body>
-</html>
+  // ============ HISTORY ============
+  "The Byzantine emperor Justinian II had his nose cut off when he was deposed in 695. He returned to the throne a decade later wearing a solid gold prosthetic — and took bloody revenge on those who had mutilated him.",
+  "Genghis Khan's tomb has never been found. The soldiers who buried him are said to have killed everyone they met on the way back, then been killed in turn, so that no one alive knew the location.",
+  "The shortest war in recorded history, the Anglo-Zanzibar War of 1896, lasted somewhere between 38 and 45 minutes. The Sultan's palace was shelled into surrender before the morning was out.",
+  "The Aztec capital Tenochtitlan, built on an island in a lake, had a population of perhaps 200,000 around 1500 — larger than any city in Europe at the time except possibly Paris, with causeways, aqueducts, and floating gardens.",
+  "The 'Year Without a Summer', 1816, was caused by the eruption of Mount Tambora the year before. Crops failed across the Northern Hemisphere, and the gloom indirectly produced Frankenstein and the invention of the bicycle.",
+  "The Library of Ashurbanipal at Nineveh, destroyed by fire in 612 BCE, survived because the blaze baked its clay tablets hard rather than destroying them. Most of what we know of Mesopotamian literature comes from that accidental kiln.",
+  "Hatshepsut, one of Egypt's most successful pharaohs, was systematically chiselled out of her monuments by her successor. The erasure was so incomplete that modern Egyptologists were able to reconstruct her reign from what remained.",
+  "The first recorded labour strike happened in Egypt around 1152 BCE, when tomb-builders at Deir el-Medina downed tools over late rations. We have the records because they were written on stone.",
+  "Iceland's parliament, the Althing, was founded around 930 CE on a windswept plain at Þingvellir and is among the oldest functioning legislative assemblies on Earth — older than almost every modern nation.",
+  "The Antikythera mechanism, recovered from a Roman-era shipwreck, is a geared analogue computer roughly 2,100 years old that modelled the movements of the sun, moon, and planets. Nothing of comparable sophistication appears again for over a thousand years.",
+  "Diogenes the Cynic lived in a large ceramic jar in Athens, owned almost nothing, and when Alexander the Great offered him any favour he wished, asked only that the conqueror stop blocking his sunlight.",
+  "The 'turning a blind eye' phrase comes from Admiral Nelson at the Battle of Copenhagen in 1801. Ordered to withdraw, he raised the telescope to his blind eye, said he saw no signal, and pressed the attack to victory.",
+  "Cleopatra lived closer in time to the first Moon landing than to the building of the Great Pyramid. The pyramid was already more than two thousand years old when she was born.",
+  "Manichaeism, founded in 3rd-century Persia, was once a world religion stretching from Spain to China, with millions of followers. It was so thoroughly suppressed that for centuries it was known only through its enemies' descriptions.",
+  "The Venetian Republic ran a state-controlled date for plague isolation: ships had to wait forty days — quaranta giorni — before landing. The word 'quarantine' is a fossil of that policy.",
+  "In 1788, a sentry at the Battle of Karánsebes reportedly triggered a panic in which the Austrian army attacked itself in the dark, suffering thousands of casualties before the enemy Ottomans even arrived. The story is likely exaggerated but rooted in a real chaotic retreat.",
+  "The Great Emu War of 1932 was a real military operation. The Australian army deployed soldiers with machine guns against destructive emu flocks in Western Australia — and effectively lost. The emus scattered and survived.",
+  "Pheasant Island, a tiny river island between France and Spain, switches sovereignty every six months under a treaty signed in 1659. It is the smallest condominium in the world and has changed hands peacefully for over 350 years.",
+  "The Cyrus Cylinder, from 539 BCE, records the Persian king's policy of returning displaced peoples and restoring their temples. It is sometimes called the first charter of human rights, though scholars debate how modern that reading is.",
+  "Roman concrete is in some ways more durable than modern concrete, especially in seawater. It used volcanic ash that triggers ongoing chemical reactions, letting the material self-heal cracks over centuries. The recipe was effectively lost for over a millennium.",
+  "The longest reign in recorded history may belong to Pepi II of Egypt, said to have ruled for around 90 years after taking the throne as a child around 2278 BCE — though the figure is disputed.",
+  "The 'defenestration of Prague' in 1618 — throwing royal officials out of a castle window — he
