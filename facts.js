@@ -98,4 +98,55 @@ const FACTS = [
   "The Cyrus Cylinder, from 539 BCE, records the Persian king's policy of returning displaced peoples and restoring their temples. It is sometimes called the first charter of human rights, though scholars debate how modern that reading is.",
   "Roman concrete is in some ways more durable than modern concrete, especially in seawater. It used volcanic ash that triggers ongoing chemical reactions, letting the material self-heal cracks over centuries. The recipe was effectively lost for over a millennium.",
   "The longest reign in recorded history may belong to Pepi II of Egypt, said to have ruled for around 90 years after taking the throne as a child around 2278 BCE — though the figure is disputed.",
-  "The 'defenestration of Prague' in 1618 — throwing royal officials out of a castle window — he
+  "The 'defenestration of Prague' in 1618 — throwing royal officials out of a castle window — helped trigger the Thirty Years' War. The men survived the fall; Catholics said angels caught them, Protestants said they landed in a dung heap.",
+  "When Krakatoa erupted in 1883, the sound was heard nearly 5,000 km away and is considered the loudest sound in modern recorded history. The pressure wave circled the globe several times and was detected on barometers worldwide.",
+  "The Rosetta Stone was the key to reading Egyptian hieroglyphs because it carried the same decree in three scripts. It sat unread for centuries; the decipherment took decades and a fierce rivalry between an English physician and a French scholar.",
+  "Timbuktu was a major centre of learning in the 15th and 16th centuries, with libraries holding hundreds of thousands of manuscripts on astronomy, medicine, and law — a scholarly metropolis on the edge of the Sahara.",
+  "The Tunguska event of 1908 flattened over 2,000 square kilometres of Siberian forest, yet left no crater. The leading explanation is the air-burst of a comet or asteroid several kilometres above the ground.",
+  "The medieval 'Children's Crusade' of 1212 — in which thousands of young people supposedly set out for the Holy Land — is now thought to be partly legend and partly a movement of the poor, several of whom were reportedly sold into slavery.",
+  "Mansa Musa, ruler of the Mali Empire, made a pilgrimage to Mecca in 1324 so laden with gold that his spending in Cairo reportedly depressed the value of gold in the region for years afterward.",
+  "The Library of Alexandria did not burn down in a single fire. It declined over centuries through war, neglect, and shifting politics. Its slow disappearance is more tragic and more ordinary than the myth of one great blaze.",
+  "Pompeii was so completely buried by Vesuvius in 79 CE that its rediscovery in the 18th century revealed graffiti, bakeries with bread still in the ovens, and the voids left by bodies, which archaeologists later filled with plaster to recover their shapes.",
+  "The Mongol Empire at its height connected Europe and Asia so thoroughly that a system of relay stations, the Yam, let messengers cross thousands of miles. It also, tragically, helped carry the Black Death westward.",
+  "Easter Island's giant statues, the moai, were 'walked' into position, according to recent experiments — rocked side to side with ropes by small teams, consistent with islanders' own oral tradition that the statues walked.",
+  "The Aztecs, Maya, and other Mesoamerican peoples used cacao beans as currency. You could quite literally buy goods with what would become chocolate; counterfeiters made fake beans out of clay.",
+  "The marathon commemorates a messenger who supposedly ran from Marathon to Athens in 490 BCE to announce a victory and then dropped dead. The story is likely a later embellishment, but the distance stuck.",
+  "In 1518, a 'dancing plague' struck Strasbourg: dozens, then hundreds of people danced uncontrollably for days, some reportedly to death. Contemporary records are real; the cause is still debated.",
+  "The oldest known musical instrument is a flute carved from a vulture's wing bone roughly 40,000 years ago, found in a German cave. Someone played music before the last Ice Age ended.",
+  "The Code of Hammurabi, carved around 1750 BCE, is one of the earliest substantial legal codes. Its famous 'eye for an eye' principle was, in context, a limit on revenge — punishment proportional, not unlimited.",
+  "The Knights Templar effectively invented an early form of banking: a pilgrim could deposit funds in one country and withdraw them in another using a letter of credit, so as not to carry gold across dangerous roads.",
+  "Carthage was so thoroughly destroyed by Rome in 146 BCE that 'the Romans salted the earth' became legend. The salting is almost certainly a later myth, but the erasure of the city itself was very real.",
+  "The Spanish flu of 1918 was not Spanish. Wartime censorship suppressed reporting in combatant nations; neutral Spain reported freely, so the pandemic took its name from the one country honest about it.",
+
+  // ============ ETYMOLOGY / LANGUAGE (writer-friendly) ============
+  "'Companion' literally means 'one with whom you break bread', from the Latin com- (with) and panis (bread). The word carries a shared meal inside it.",
+  "'Disaster' means 'bad star', from the Italian disastro — a calamity once blamed on a malevolent alignment of the heavens. Astrology is fossilised inside everyday catastrophe.",
+  "'Sincere' may come from sine cera — 'without wax' — the mark of honest sculptors who didn't fill flaws in their marble. The etymology is disputed but too good to ignore.",
+  "'Nightmare' contains 'mare', an Old English word for a demon believed to sit on the chest of sleepers and press the breath from them. It has nothing to do with horses.",
+  "'Clue' comes from 'clew', a ball of thread — specifically the one Theseus unspooled to find his way out of the labyrinth. To follow a clue is to follow a thread back out of the maze.",
+  "'Quintessence' was literally the fifth element — beyond earth, water, air, and fire — the pure substance the ancients believed made up the heavens. To find the quintessence is to find the heavenly distillation of a thing.",
+  "'Sarcasm' comes from the Greek sarkazein, meaning to tear flesh like a dog. A sarcastic remark is, etymologically, a bite.",
+  "'Tragedy' may derive from the Greek for 'goat song' — tragōidia — though why remains debated. The most exalted dramatic form may be named after a goat.",
+  "'Muscle' comes from the Latin musculus, 'little mouse' — Roman observers thought a flexing bicep looked like a mouse moving under the skin.",
+  "The word 'robot' was coined in Karel Čapek's 1920 play R.U.R., from the Czech robota, meaning forced or servile labour. The first robots in fiction were, by their very name, slaves.",
+
+  // ============ MISC. STRANGE-BUT-TRUE (cross-domain) ============
+  "Octopuses have three hearts, blue blood, and two-thirds of their neurons distributed through their arms, which can taste, decide, and act with a degree of independence from the central brain.",
+  "There is a species of jellyfish, Turritopsis dohrnii, that can revert from its adult form back to its juvenile stage and begin again — making it, under the right conditions, biologically immortal.",
+  "The bar-tailed godwit flies from Alaska to New Zealand without stopping — over 12,000 km in a single flight, no food, no water, no rest, navigating across open ocean for more than a week.",
+  "Trees in a forest exchange nutrients and warning signals through underground networks of fungi, sometimes called the 'wood wide web'. A dying tree may pass its resources to its neighbours.",
+  "There are more possible arrangements of a single shuffled deck of cards than there are atoms on Earth. Almost any well-shuffled deck is in an order that has never existed before in history.",
+  "Wittgenstein wrote two major philosophical works that flatly contradict each other. He thought the first had solved philosophy, then spent years arguing against his own younger self in the second.",
+  "Conway's Game of Life, a grid of cells following four simple rules, is capable in principle of universal computation — within it, with the right starting pattern, you can build a working computer.",
+  "Ibn Sina (Avicenna) devised a thought experiment in the 11th century, the 'Floating Man', imagining a person created in midair with no sensory input, who would still know he existed — anticipating Descartes by six centuries.",
+  "Hume argued that we have no logical justification for believing the sun will rise tomorrow — only the habit of having seen it rise before. Philosophers have been trying to escape his conclusion ever since.",
+  "Voyager 1, launched in 1977, is now the most distant human-made object in existence and is still faintly transmitting. Its radio signal, travelling at light speed, takes over 22 hours to reach Earth.",
+  "There is a phenomenon called sonoluminescence in which sound passing through a liquid can collapse tiny bubbles violently enough to emit brief flashes of light. The exact mechanism is still not fully understood.",
+  "The Ship of Theseus paradox — whether an object whose parts are all gradually replaced remains the same object — appears in Plutarch in the 1st century CE, and in older Buddhist and Heraclitean forms before that.",
+  "Bananas are mildly radioactive, owing to the potassium they contain. The dose is so small and so familiar that scientists informally measure tiny radiation exposures in 'banana equivalent doses'.",
+  "Sharks are older than trees. Sharks have swum the oceans for roughly 450 million years; the first true trees appeared around a hundred million years later.",
+  "The deepest point in the ocean, the Challenger Deep, is nearly 11 km down. More people have walked on the surface of the Moon than have descended to the bottom of it."
+];
+
+// Expose for the strip
+window.FACTS = FACTS;
