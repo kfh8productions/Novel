@@ -655,4 +655,249 @@ function selectUrgency(u) {
   document.querySelectorAll('.urgency-pip').forEach(function(p) {
     p.classList.toggle('selected', parseInt(p.dataset.u) === u);
   });
-  document.getElementById('urgency-label').textContent = URGENCY_LABELS[u - 1
+  document.getElementById('urgency-label').textContent = URGENCY_LABELS[u - 1];
+}
+
+/* ---- MODAL ---- */
+function openModal(id) {
+  editingId = id || null;
+  var t = id && tasks[id];
+  document.getElementById('modalTitle').textContent = id ? 'Edit Task' : 'New Task';
+  document.getElementById('btnDelete').style.display = id ? '' : 'none';
+  document.getElementById('f-title').value    = t ? t.title : '';
+  document.getElementById('f-location').value = t ? (t.location || '') : '';
+  document.getElementById('f-notes').innerHTML = t ? (t.notes || '') : '';
+  selectUrgency(t ? (t.urgency || 4) : 4);
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(function() {
+    if (id) {
+      var el = document.getElementById('f-notes');
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.focus();
+      var range = document.createRange();
+      var sel = window.getSelection();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } else {
+      document.getElementById('f-title').focus();
+    }
+  }, 300);
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  editingId = null;
+}
+
+/* ---- CRUD ---- */
+function saveTask() {
+  var title = document.getElementById('f-title').value.trim();
+  if (!title) { document.getElementById('f-title').focus(); return; }
+  var id  = editingId || uid();
+  var old = editingId && tasks[editingId];
+  var task = {
+    id: id,
+    title: title,
+    location: document.getElementById('f-location').value.trim(),
+    notes: document.getElementById('f-notes').innerHTML.trim(),
+    urgency: selectedUrgency,
+    done: old ? old.done : false,
+    created: old ? old.created : Date.now()
+  };
+  closeModal();
+  tasks[id] = task;
+  render();
+  fbSet(id, task).catch(function(e) { console.error('Save failed', e); });
+}
+
+function deleteTask() {
+  if (!confirm('Delete this task?')) return;
+  var id = editingId;
+  closeModal();
+  delete tasks[id];
+  render();
+  fbDel(id);
+}
+
+function toggleDone(id) {
+  var t = tasks[id]; if (!t) return;
+  t.done = !t.done;
+  render();
+  fbSet(id, t);
+}
+
+function nudgeUrgency(id, dir) {
+  var t = tasks[id]; if (!t) return;
+  t.urgency = Math.min(7, Math.max(1, (t.urgency || 4) + dir));
+  render();
+  fbSet(id, t);
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(function(c) {
+    c.classList.toggle('active', c.dataset.filter === f);
+  });
+  render();
+}
+
+/* ---- RENDER ---- */
+function formatDue(due) {
+  if (!due) return null;
+  var d = new Date(due + 'T00:00:00'), now = new Date();
+  now.setHours(0,0,0,0);
+  var diff = Math.round((d - now) / 86400000);
+  if (diff < 0)   return { text: Math.abs(diff) + 'd overdue', overdue: true };
+  if (diff === 0) return { text: 'today', overdue: false };
+  if (diff === 1) return { text: 'tomorrow', overdue: false };
+  if (diff < 7)   return { text: 'in ' + diff + 'd', overdue: false };
+  return { text: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), overdue: false };
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+}
+
+function renderNotes(html) {
+  // Notes stored as HTML from contenteditable - safe to render directly
+  // Strip any dangerous tags just in case
+  return html.replace(/<script[^>]*>.*?<\/script>/gi, '')
+             .replace(/on\w+="[^"]*"/gi, '');
+}
+
+function render() {
+  var board = document.getElementById('board');
+  board.querySelectorAll('.task').forEach(function(el) { el.remove(); });
+
+  var list = Object.values(tasks);
+  if (currentFilter === 'open') list = list.filter(function(t) { return !t.done; });
+  if (currentFilter === 'done') list = list.filter(function(t) { return t.done; });
+
+  list.sort(function(a, b) {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.urgency !== b.urgency) return a.urgency - b.urgency;
+    return b.created - a.created;
+  });
+
+  document.getElementById('emptyState').classList.toggle('show', list.length === 0);
+
+  list.forEach(function(t) {
+    var uc = URGENCY_CLASSES[(t.urgency || 4) - 1];
+
+    var card = document.createElement('div');
+    card.className = 'task' + (t.done ? ' done' : '');
+    card.dataset.id = t.id;
+
+    var main = document.createElement('div');
+    main.className = 'task-main';
+    main.dataset.id = t.id;
+    main.innerHTML =
+      '<div class="urgency-bar ' + uc + '"></div>' +
+      '<div class="task-body">' +
+        '<div class="task-title">' + esc(t.title) + '</div>' +
+        (t.location ? '<div class="task-location">' + esc(t.location) + '</div>' : '') +
+        (t.notes ? '<div class="task-notes-preview show">' + renderNotes(t.notes) + '</div>' : '') +
+      '</div>' +
+      '<div class="task-actions">' +
+        '<button class="heat-btn" data-action="up" data-id="' + t.id + '">^</button>' +
+        '<button class="check-btn" data-action="check" data-id="' + t.id + '">' +
+          '<svg class="check-icon" viewBox="0 0 8 8"><polyline points="1,4 3,6 7,2" stroke-width="1.5" stroke="currentColor" fill="none"/></svg>' +
+        '</button>' +
+        '<button class="heat-btn" data-action="down" data-id="' + t.id + '">v</button>' +
+      '</div>';
+
+    card.appendChild(main);
+    board.appendChild(card);
+  });
+}
+
+/* ---- EVENTS ---- */
+document.getElementById('btnStrike').addEventListener('click', function(e) {
+  e.preventDefault();
+  document.getElementById('f-notes').focus();
+  document.execCommand('strikeThrough', false, null);
+});
+
+// Paste as plain text only -- strip all formatting
+document.getElementById('f-notes').addEventListener('paste', function(e) {
+  e.preventDefault();
+  var text = e.clipboardData.getData('text/plain');
+  document.execCommand('insertText', false, text);
+});
+
+document.addEventListener('click', function(e) {
+  var el = e.target;
+  var fc = el.closest('.filter-chip'); if (fc) { setFilter(fc.dataset.filter); return; }
+  var pip = el.closest('.urgency-pip'); if (pip) { selectUrgency(parseInt(pip.dataset.u)); return; }
+  if (el.id === 'addBtn')    { openModal(); return; }
+  if (el.id === 'btnSave')   { saveTask(); return; }
+  if (el.id === 'btnCancel') { closeModal(); return; }
+  if (el.id === 'btnDelete') { deleteTask(); return; }
+  if (el.id === 'overlay')   { closeModal(); return; }
+  var action = el.dataset && el.dataset.action;
+  if (action === 'up')    { nudgeUrgency(el.dataset.id, -1); return; }
+  if (action === 'down')  { nudgeUrgency(el.dataset.id, 1); return; }
+  if (action === 'check') { toggleDone(el.dataset.id); return; }
+  var card = el.closest('.task');
+  if (card && !el.closest('.task-actions')) { openModal(card.dataset.id); return; }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ---- BOOT ---- */
+checkLock();
+startPolling();
+
+/* ---- SERVICE WORKER (PWA) ---- */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(function() {});
+}
+</script>
+
+<script src="facts.js"></script>
+<script>
+  (function () {
+    var body = document.getElementById("fact-strip-body");
+    var reroll = document.getElementById("fact-strip-reroll");
+    if (!body || !reroll || !window.FACTS) return;
+
+    var HISTORY_KEY = "novelFactHistory:v1";
+    var HISTORY_SIZE = 20;
+
+    function loadHistory() {
+      try {
+        var raw = localStorage.getItem(HISTORY_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) { return []; }
+    }
+    function saveHistory(arr) {
+      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr.slice(-HISTORY_SIZE))); }
+      catch (e) {}
+    }
+    function pickFact() {
+      var facts = window.FACTS;
+      var history = loadHistory();
+      var attempts = 0, idx;
+      do {
+        idx = Math.floor(Math.random() * facts.length);
+        attempts++;
+      } while (history.indexOf(idx) !== -1 && attempts < 20);
+      history.push(idx);
+      saveHistory(history);
+      return facts[idx];
+    }
+    function render() { body.textContent = pickFact(); }
+    reroll.addEventListener("click", render);
+    render();
+  })();
+</script>
+</body>
+</html>
