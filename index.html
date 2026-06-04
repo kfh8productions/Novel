@@ -403,12 +403,7 @@
   .fmt-btn:hover { border-color: var(--text); color: var(--text); }
 
   .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
-  .btn-save {
-    flex: 1; background: var(--text); color: var(--bg); border: none;
-    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
-    padding: 12px; transition: opacity 0.15s;
-  }
-  .btn-save:hover { opacity: 0.85; }
+
   .btn-cancel {
     background: none; border: 1px solid var(--border); color: var(--muted);
     font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 12px 20px;
@@ -416,56 +411,6 @@
   .btn-delete {
     background: none; border: 1px solid #3a1111; color: var(--urgent1);
     font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 16px;
-  }
-
-  /* ---- Factoid strip ---- */
-  .fact-strip {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px 24px;
-    border-bottom: 1px solid var(--border);
-  }
-  .fact-strip__label {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.85rem;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    flex-shrink: 0;
-    padding-top: 2px;
-    text-transform: uppercase;
-  }
-  .fact-strip__body {
-    flex: 1;
-    font-size: 0.7rem;
-    line-height: 1.6;
-    font-style: italic;
-    color: var(--muted);
-    min-width: 0;
-  }
-  .fact-strip__reroll {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 0.75rem;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    transition: border-color 0.15s, color 0.15s, transform 0.25s;
-  }
-  .fact-strip__reroll:hover {
-    border-color: var(--urgent2);
-    color: var(--urgent2);
-    transform: rotate(180deg);
-  }
-  @media (max-width: 540px) {
-    .fact-strip__label { display: none; }
-    .fact-strip { padding: 10px 16px; }
   }
 </style>
 </head>
@@ -493,12 +438,6 @@
     <button class="add-btn" id="addBtn">+ Add Task</button>
   </div>
 </header>
-
-<div class="fact-strip" id="fact-strip">
-  <span class="fact-strip__label">Marginalia</span>
-  <span class="fact-strip__body" id="fact-strip-body">…</span>
-  <button class="fact-strip__reroll" id="fact-strip-reroll" title="New fact" aria-label="New fact">↻</button>
-</div>
 
 <div class="legend">
   <span class="legend-label">Urgency:</span>
@@ -556,8 +495,7 @@
       <div class="urgency-label-text" id="urgency-label">whenever</div>
     </div>
     <div class="modal-actions">
-      <button class="btn-save" id="btnSave">Save Task</button>
-      <button class="btn-cancel" id="btnCancel">Cancel</button>
+      <button class="btn-cancel" id="btnCancel">Close</button>
       <button class="btn-delete" id="btnDelete" style="display:none">Delete</button>
     </div>
   </div>
@@ -656,14 +594,20 @@ function selectUrgency(u) {
     p.classList.toggle('selected', parseInt(p.dataset.u) === u);
   });
   document.getElementById('urgency-label').textContent = URGENCY_LABELS[u - 1];
+  scheduleAutoSave();
 }
 
 /* ---- MODAL ---- */
 function openModal(id) {
-  editingId = id || null;
-  var t = id && tasks[id];
-  document.getElementById('modalTitle').textContent = id ? 'Edit Task' : 'New Task';
-  document.getElementById('btnDelete').style.display = id ? '' : 'none';
+  // For new tasks, create an id immediately so autosave works
+  if (!id) {
+    id = uid();
+    tasks[id] = { id: id, title: '', location: '', notes: '', urgency: 4, done: false, created: Date.now() };
+  }
+  editingId = id;
+  var t = tasks[id];
+  document.getElementById('modalTitle').textContent = t.title ? 'Edit Task' : 'New Task';
+  document.getElementById('btnDelete').style.display = '';
   document.getElementById('f-title').value    = t ? t.title : '';
   document.getElementById('f-location').value = t ? (t.location || '') : '';
   document.getElementById('f-notes').innerHTML = t ? (t.notes || '') : '';
@@ -687,6 +631,18 @@ function openModal(id) {
 }
 
 function closeModal() {
+  clearTimeout(autoSaveTimer);
+  // If title is empty, discard the task
+  if (editingId) {
+    var title = document.getElementById('f-title').value.trim();
+    if (!title) {
+      delete tasks[editingId];
+      fbDel(editingId);
+      render();
+    } else {
+      autoSave();
+    }
+  }
   document.getElementById('overlay').classList.remove('open');
   editingId = null;
 }
@@ -836,7 +792,6 @@ document.addEventListener('click', function(e) {
   var fc = el.closest('.filter-chip'); if (fc) { setFilter(fc.dataset.filter); return; }
   var pip = el.closest('.urgency-pip'); if (pip) { selectUrgency(parseInt(pip.dataset.u)); return; }
   if (el.id === 'addBtn')    { openModal(); return; }
-  if (el.id === 'btnSave')   { saveTask(); return; }
   if (el.id === 'btnCancel') { closeModal(); return; }
   if (el.id === 'btnDelete') { deleteTask(); return; }
   if (el.id === 'overlay')   { closeModal(); return; }
@@ -852,6 +807,38 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeModal();
 });
 
+/* ---- AUTOSAVE ---- */
+var autoSaveTimer = null;
+
+function autoSave() {
+  if (!editingId) return;
+  var title = document.getElementById('f-title').value.trim();
+  if (!title) return;
+  var old = tasks[editingId];
+  var task = {
+    id: editingId,
+    title: title,
+    location: document.getElementById('f-location').value.trim(),
+    notes: document.getElementById('f-notes').innerHTML.trim(),
+    urgency: selectedUrgency,
+    done: old ? old.done : false,
+    created: old ? old.created : Date.now()
+  };
+  tasks[editingId] = task;
+  render();
+  fbSet(editingId, task).catch(function(e) { console.error('Autosave failed', e); });
+}
+
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(autoSave, 800);
+}
+
+// Wire autosave to all input fields
+document.getElementById('f-title').addEventListener('input', scheduleAutoSave);
+document.getElementById('f-location').addEventListener('input', scheduleAutoSave);
+document.getElementById('f-notes').addEventListener('input', scheduleAutoSave);
+
 /* ---- BOOT ---- */
 checkLock();
 startPolling();
@@ -860,44 +847,6 @@ startPolling();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function() {});
 }
-</script>
-
-<script src="facts.js"></script>
-<script>
-  (function () {
-    var body = document.getElementById("fact-strip-body");
-    var reroll = document.getElementById("fact-strip-reroll");
-    if (!body || !reroll || !window.FACTS) return;
-
-    var HISTORY_KEY = "novelFactHistory:v1";
-    var HISTORY_SIZE = 20;
-
-    function loadHistory() {
-      try {
-        var raw = localStorage.getItem(HISTORY_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (e) { return []; }
-    }
-    function saveHistory(arr) {
-      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr.slice(-HISTORY_SIZE))); }
-      catch (e) {}
-    }
-    function pickFact() {
-      var facts = window.FACTS;
-      var history = loadHistory();
-      var attempts = 0, idx;
-      do {
-        idx = Math.floor(Math.random() * facts.length);
-        attempts++;
-      } while (history.indexOf(idx) !== -1 && attempts < 20);
-      history.push(idx);
-      saveHistory(history);
-      return facts[idx];
-    }
-    function render() { body.textContent = pickFact(); }
-    reroll.addEventListener("click", render);
-    render();
-  })();
 </script>
 </body>
 </html>
